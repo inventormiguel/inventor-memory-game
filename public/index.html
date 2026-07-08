@@ -41,7 +41,6 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* grain do site */
   .grain{
     position:fixed;inset:-50%;z-index:200;pointer-events:none;opacity:.07;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
@@ -53,6 +52,33 @@
     70%{transform:translate(-7%,6%)}90%{transform:translate(4%,8%)}
   }
 
+  /* ---------- seletor de idioma ---------- */
+  .langbar {
+    position: fixed;
+    top: 14px;
+    right: 16px;
+    z-index: 210;
+    display: flex;
+    gap: 2px;
+    border: 1px solid var(--line);
+    background: rgba(5, 5, 8, .8);
+    backdrop-filter: blur(4px);
+  }
+  .langbar button {
+    background: transparent;
+    border: none;
+    color: var(--ink-dim);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: color .15s, background .15s;
+  }
+  .langbar button:hover { color: var(--ink); }
+  .langbar button.active { background: var(--acid); color: #000; }
+
   .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 640px; padding: 24px 16px 48px; }
   .screen.active { display: flex; }
 
@@ -63,7 +89,7 @@
     letter-spacing: .35em;
     text-transform: uppercase;
     color: var(--acid);
-    margin-top: 40px;
+    margin-top: 48px;
   }
   h1.logo {
     font-family: var(--font-display);
@@ -84,7 +110,7 @@
     margin-top: 14px;
     font-size: 1rem;
     text-align: center;
-    max-width: 40ch;
+    max-width: 44ch;
   }
 
   .btn {
@@ -147,7 +173,7 @@
   .ranking-empty { text-align: center; color: var(--ink-dim); padding: 10px 0; font-size: .95rem; }
 
   /* ---------- HUD ---------- */
-  .hud { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 16px; }
+  .hud { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 40px; }
   .hud-row { display: flex; gap: 10px; align-items: stretch; }
   .pill {
     border: 1px solid var(--line);
@@ -222,6 +248,7 @@
     min-height: 1.8em;
     text-align: center;
     color: var(--ink-dim);
+    max-width: 52ch;
   }
   .status.ok { color: var(--acid); }
   .status.bad { color: var(--mag); }
@@ -273,14 +300,22 @@
 <body>
 <div class="grain"></div>
 
+<!-- IDIOMA -->
+<nav class="langbar" id="langbar">
+  <button data-lang="pt">PT</button>
+  <button data-lang="en">EN</button>
+  <button data-lang="ru">RU</button>
+  <button data-lang="uk">UA</button>
+</nav>
+
 <!-- HOME -->
 <div class="screen active" id="screen-home">
-  <p class="eyebrow">// jogo de memória</p>
+  <p class="eyebrow" data-i18n="eyebrow">// jogo de memória</p>
   <h1 class="logo">Inventor <span>Memory</span></h1>
-  <p class="tagline">Memorize o padrão, repita e vá o mais longe que conseguir.</p>
-  <button class="btn" id="btn-play">▶ Jogar</button>
+  <p class="tagline" data-i18n="tagline">Memorize o padrão, repita e vá o mais longe que conseguir.</p>
+  <button class="btn" id="btn-play" data-i18n="btnPlay">▶ Jogar</button>
   <div class="ranking-box">
-    <h2>Ranking dos inventores</h2>
+    <h2 data-i18n="rankingTitle">Ranking dos inventores</h2>
     <ol class="ranking-list" id="ranking-home"></ol>
   </div>
 </div>
@@ -290,25 +325,25 @@
   <div class="hud">
     <div class="pill hearts" id="hearts"></div>
     <div class="hud-row">
-      <span class="pill">FASE <b id="fase-label">1</b></span>
+      <span class="pill"><span data-i18n="fase">FASE</span> <b id="fase-label">1</b></span>
       <span class="pill" id="timer-pill">⏱ <b id="timer">15</b>s</span>
       <span class="pill">✔ <b id="marcados">0/3</b></span>
     </div>
   </div>
   <div class="grid-wrap"><div class="grid no-click" id="grid"></div></div>
-  <div class="status" id="status">observe o padrão...</div>
+  <div class="status" id="status"></div>
 </div>
 
 <!-- GAME OVER -->
 <div class="screen" id="screen-gameover">
-  <p class="eyebrow">// fim de jogo</p>
+  <p class="eyebrow" data-i18n="goEyebrow">// fim de jogo</p>
   <h1 class="logo">Game <span>Over</span></h1>
   <div class="gameover-card">
-    <p class="fase-final">Você chegou na fase</p>
+    <p class="fase-final" data-i18n="goReached">Você chegou na fase</p>
     <div class="fase-num" id="go-fase">1</div>
     <div id="go-form">
-      <input type="text" id="go-nome" maxlength="20" placeholder="seu nominho aqui..." autocomplete="off">
-      <button class="btn" id="btn-salvar">Entrar pro ranking</button>
+      <input type="text" id="go-nome" maxlength="20" autocomplete="off">
+      <button class="btn" id="btn-salvar" data-i18n="btnSave">Entrar pro ranking</button>
     </div>
     <div id="go-saved" style="display:none;">
       <div class="ranking-box" style="margin-top:0;">
@@ -316,26 +351,161 @@
         <ol class="ranking-list" id="ranking-go"></ol>
       </div>
     </div>
-    <button class="btn secondary" id="btn-restart">Jogar de novo</button>
+    <button class="btn secondary" id="btn-restart" data-i18n="btnAgain">Jogar de novo</button>
   </div>
 </div>
 
 <script>
 (() => {
-  const TEMPO_RODADA = 15;          // segundos pra repetir o padrão
-  const PAUSA_VITORIA = 2000;       // 2s entre fases
+  const TEMPO_RODADA = 15;
+  const PAUSA_VITORIA = 2000;
   const VIDAS_INICIAIS = 3;
-  const GRADE = 5;                  // grid FIXO 5x5, nunca muda
-  const PADRAO_MAX = 12;            // teto de quadrados no padrão
+  const GRADE = 5;                  // grid FIXO 5x5
+  const PADRAO_MAX = 12;
 
   const $ = (id) => document.getElementById(id);
   const screens = { home: $('screen-home'), game: $('screen-game'), gameover: $('screen-gameover') };
+
+  // ═══════════ i18n ═══════════
+  const I18N = {
+    pt: {
+      htmlLang: 'pt-BR',
+      eyebrow: '// jogo de memória',
+      tagline: 'Memorize o padrão, repita e vá o mais longe que conseguir.',
+      btnPlay: '▶ Jogar',
+      rankingTitle: 'Ranking dos inventores',
+      rankingEmpty: 'ninguém jogou ainda... seja o primeiro 😎',
+      rankingError: 'não deu pra carregar o ranking 😅',
+      fase: 'FASE',
+      lvl: 'fase',
+      statusWatch: 'observe o padrão...',
+      statusRepeat: 'repita o padrão — toque pra marcar, toque de novo pra desmarcar',
+      statusWin: 'mandou bem! próxima fase...',
+      timeUpRetry: (n) => `acabou o tempo! ${n} ${n > 1 ? 'vidinhas' : 'vidinha'} — o padrão era esse. tenta de novo!`,
+      timeUpOver: 'acabou o tempo — fim de jogo',
+      goEyebrow: '// fim de jogo',
+      goReached: 'Você chegou na fase',
+      namePlaceholder: 'seu nominho aqui...',
+      nameMissing: 'ei, coloca o nominho!',
+      btnSave: 'Entrar pro ranking',
+      btnAgain: 'Jogar de novo',
+      rankResult: (n) => `Você ficou em ${n}º lugar`,
+      saveError: 'erro ao salvar 😅',
+    },
+    en: {
+      htmlLang: 'en',
+      eyebrow: '// memory game',
+      tagline: 'Memorize the pattern, repeat it and see how far you can go.',
+      btnPlay: '▶ Play',
+      rankingTitle: 'Inventors leaderboard',
+      rankingEmpty: 'no one has played yet... be the first 😎',
+      rankingError: "couldn't load the leaderboard 😅",
+      fase: 'LEVEL',
+      lvl: 'lvl',
+      statusWatch: 'watch the pattern...',
+      statusRepeat: 'repeat the pattern — tap to mark, tap again to unmark',
+      statusWin: 'nice! next level...',
+      timeUpRetry: (n) => `time's up! ${n} ${n > 1 ? 'lives' : 'life'} left — this was the pattern. try again!`,
+      timeUpOver: "time's up — game over",
+      goEyebrow: '// game over',
+      goReached: 'You reached level',
+      namePlaceholder: 'your name here...',
+      nameMissing: 'hey, enter your name!',
+      btnSave: 'Join the leaderboard',
+      btnAgain: 'Play again',
+      rankResult: (n) => `You ranked #${n}`,
+      saveError: 'error saving 😅',
+    },
+    ru: {
+      htmlLang: 'ru',
+      eyebrow: '// игра на память',
+      tagline: 'Запомни узор, повтори его и пройди как можно дальше.',
+      btnPlay: '▶ Играть',
+      rankingTitle: 'Рейтинг изобретателей',
+      rankingEmpty: 'пока никто не играл... будь первым 😎',
+      rankingError: 'не удалось загрузить рейтинг 😅',
+      fase: 'УРОВЕНЬ',
+      lvl: 'ур.',
+      statusWatch: 'запомни узор...',
+      statusRepeat: 'повтори узор — нажми, чтобы отметить, нажми ещё раз, чтобы снять',
+      statusWin: 'отлично! следующий уровень...',
+      timeUpRetry: (n) => `время вышло! осталось жизней: ${n} — вот узор. попробуй ещё раз!`,
+      timeUpOver: 'время вышло — игра окончена',
+      goEyebrow: '// конец игры',
+      goReached: 'Ты дошёл до уровня',
+      namePlaceholder: 'твоё имя...',
+      nameMissing: 'эй, напиши имя!',
+      btnSave: 'В рейтинг',
+      btnAgain: 'Играть снова',
+      rankResult: (n) => `Ты на ${n}-м месте`,
+      saveError: 'ошибка сохранения 😅',
+    },
+    uk: {
+      htmlLang: 'uk',
+      eyebrow: '// гра на пам’ять',
+      tagline: 'Запам’ятай візерунок, повтори його і пройди якомога далі.',
+      btnPlay: '▶ Грати',
+      rankingTitle: 'Рейтинг винахідників',
+      rankingEmpty: 'ще ніхто не грав... будь першим 😎',
+      rankingError: 'не вдалося завантажити рейтинг 😅',
+      fase: 'РІВЕНЬ',
+      lvl: 'рів.',
+      statusWatch: 'запам’ятай візерунок...',
+      statusRepeat: 'повтори візерунок — торкнись, щоб позначити, торкнись ще раз, щоб зняти',
+      statusWin: 'чудово! наступний рівень...',
+      timeUpRetry: (n) => `час вийшов! лишилось життів: ${n} — ось візерунок. спробуй ще раз!`,
+      timeUpOver: 'час вийшов — гра закінчена',
+      goEyebrow: '// кінець гри',
+      goReached: 'Ти дійшов до рівня',
+      namePlaceholder: 'твоє ім’я...',
+      nameMissing: 'гей, введи ім’я!',
+      btnSave: 'До рейтингу',
+      btnAgain: 'Грати знову',
+      rankResult: (n) => `Ти на ${n}-му місці`,
+      saveError: 'помилка збереження 😅',
+    },
+  };
+
+  let lang = 'pt';
+  const t = (key, ...args) => {
+    const v = I18N[lang][key];
+    return typeof v === 'function' ? v(...args) : v;
+  };
+
+  function setLang(code) {
+    if (!I18N[code]) return;
+    lang = code;
+    localStorage.setItem('inventor-memory-lang', code);
+    document.documentElement.lang = I18N[code].htmlLang;
+    document.querySelectorAll('[data-i18n]').forEach((el) => {
+      el.textContent = t(el.dataset.i18n);
+    });
+    $('go-nome').placeholder = t('namePlaceholder');
+    document.querySelectorAll('#langbar button').forEach((b) => {
+      b.classList.toggle('active', b.dataset.lang === code);
+    });
+    carregarRanking(); // re-renderiza textos do ranking
+  }
+  window.__setLang = setLang; // debug
+
+  // default por IP: Brasil → pt, resto do mundo → en (ru/uk só manual)
+  async function detectarIdioma() {
+    const salvo = localStorage.getItem('inventor-memory-lang');
+    if (salvo && I18N[salvo]) { setLang(salvo); return; }
+    try {
+      const r = await fetch('/api/geo');
+      const { country } = await r.json();
+      if (country) { setLang(country === 'BR' ? 'pt' : 'en'); return; }
+    } catch {}
+    // sem geo: cai pro idioma do navegador
+    setLang((navigator.language || 'pt').toLowerCase().startsWith('pt') ? 'pt' : 'en');
+  }
 
   const state = {
     fase: 1,
     vidas: VIDAS_INICIAIS,
     padrao: new Set(),
-    marcados: new Set(),   // seleção atual do jogador (pode marcar/desmarcar)
+    marcados: new Set(),
     jogando: false,
     timerInterval: null,
     tempoRestante: TEMPO_RODADA,
@@ -368,8 +538,6 @@
   }
 
   // ---------- dificuldade ----------
-  // fase 1 = 3 quadrados; +1 por fase até o teto. Depois do teto,
-  // o padrão fica visível cada vez menos tempo.
   function tamanhoPadrao(fase) { return Math.min(fase + 2, PADRAO_MAX); }
   function tempoExibicao(fase) {
     const qtd = tamanhoPadrao(fase);
@@ -422,7 +590,7 @@
     $('fase-label').textContent = state.fase;
     $('timer').textContent = TEMPO_RODADA;
     $('timer-pill').classList.remove('warn');
-    setStatus('observe o padrão...');
+    setStatus(t('statusWatch'));
     atualizarContador();
     $('grid').classList.add('no-click');
 
@@ -434,7 +602,7 @@
       state.padrao.forEach((i) => cells[i] && cells[i].classList.remove('lit'));
       state.jogando = true;
       $('grid').classList.remove('no-click');
-      setStatus('repita o padrão — toque pra marcar, toque de novo pra desmarcar');
+      setStatus(t('statusRepeat'));
       iniciarTimer();
     }, tempoExibicao(state.fase));
   }
@@ -466,7 +634,6 @@
       somMarca();
     }
     atualizarContador();
-    // completou certinho? fecha a fase na hora
     if (state.marcados.size === state.padrao.size &&
         [...state.marcados].every((m) => state.padrao.has(m))) {
       venceuFase();
@@ -477,7 +644,7 @@
     state.jogando = false;
     clearInterval(state.timerInterval);
     somVitoria();
-    setStatus('mandou bem! próxima fase...', 'ok');
+    setStatus(t('statusWin'), 'ok');
     const cells = $('grid').children;
     state.padrao.forEach((i) => { cells[i].classList.remove('sel'); cells[i].classList.add('win'); });
     $('grid').classList.add('no-click');
@@ -492,7 +659,6 @@
     state.vidas--;
     desenharVidas();
     $('grid').classList.add('no-click');
-    // mostra o que era: acertos em verde, faltantes em violeta, marcados errados em magenta
     const cells = $('grid').children;
     state.padrao.forEach((i) => {
       cells[i].classList.remove('sel');
@@ -503,10 +669,10 @@
     });
 
     if (state.vidas <= 0) {
-      setStatus('acabou o tempo — fim de jogo', 'bad');
+      setStatus(t('timeUpOver'), 'bad');
       setTimeout(fimDeJogo, 1600);
     } else {
-      setStatus(`acabou o tempo! ${state.vidas} vidinha${state.vidas > 1 ? 's' : ''} — o padrão era esse. tenta de novo!`, 'bad');
+      setStatus(t('timeUpRetry', state.vidas), 'bad');
       setTimeout(iniciarFase, 2400);
     }
   }
@@ -523,20 +689,21 @@
     $('go-form').style.display = 'block';
     $('go-saved').style.display = 'none';
     $('go-nome').value = localStorage.getItem('inventor-memory-nome') || '';
+    $('go-nome').placeholder = t('namePlaceholder');
     show('gameover');
     $('go-nome').focus();
   }
 
   function renderRanking(listEl, scores, destaque = -1) {
     if (!scores.length) {
-      listEl.innerHTML = '<div class="ranking-empty">ninguém jogou ainda... seja o primeiro 😎</div>';
+      listEl.innerHTML = `<div class="ranking-empty">${t('rankingEmpty')}</div>`;
       return;
     }
     listEl.innerHTML = scores.slice(0, 10).map((s, i) =>
       `<li class="${i === destaque ? 'me' : ''}">
         <span class="pos">${String(i + 1).padStart(2, '0')}</span>
         <span class="nome">${escapeHtml(s.name)}</span>
-        <span class="pts">fase ${s.level}</span>
+        <span class="pts">${t('lvl')} ${s.level}</span>
       </li>`
     ).join('');
   }
@@ -551,13 +718,13 @@
       const scores = await r.json();
       renderRanking($('ranking-home'), scores);
     } catch {
-      $('ranking-home').innerHTML = '<div class="ranking-empty">não deu pra carregar o ranking 😅</div>';
+      $('ranking-home').innerHTML = `<div class="ranking-empty">${t('rankingError')}</div>`;
     }
   }
 
   async function salvarScore() {
     const nome = $('go-nome').value.trim();
-    if (!nome) { $('go-nome').placeholder = 'ei, coloca o nominho!'; $('go-nome').focus(); return; }
+    if (!nome) { $('go-nome').placeholder = t('nameMissing'); $('go-nome').focus(); return; }
     localStorage.setItem('inventor-memory-nome', nome);
     $('btn-salvar').disabled = true;
     try {
@@ -569,11 +736,11 @@
       const data = await r.json();
       $('go-form').style.display = 'none';
       $('go-saved').style.display = 'block';
-      $('go-rank-titulo').textContent = `Você ficou em ${data.rank}º lugar`;
+      $('go-rank-titulo').textContent = t('rankResult', data.rank);
       renderRanking($('ranking-go'), data.scores, data.rank - 1);
       carregarRanking();
     } catch {
-      $('go-rank-titulo').textContent = 'erro ao salvar 😅';
+      $('go-rank-titulo').textContent = t('saveError');
     } finally {
       $('btn-salvar').disabled = false;
     }
@@ -592,7 +759,11 @@
   $('btn-restart').addEventListener('click', novoJogo);
   $('btn-salvar').addEventListener('click', salvarScore);
   $('go-nome').addEventListener('keydown', (e) => { if (e.key === 'Enter') salvarScore(); });
+  document.querySelectorAll('#langbar button').forEach((b) => {
+    b.addEventListener('click', () => setLang(b.dataset.lang));
+  });
 
+  detectarIdioma();
   carregarRanking();
 })();
 </script>

@@ -26,6 +26,32 @@ function sortScores(scores) {
   return scores.sort((a, b) => b.level - a.level || new Date(a.date) - new Date(b.date));
 }
 
+// geolocalização por IP (ip-api.com, gratuito) com cache em memória
+const geoCache = new Map();
+function getCountry(ip, cb) {
+  if (!ip) return cb(null);
+  if (geoCache.has(ip)) return cb(geoCache.get(ip));
+  let done = false;
+  const finish = (country) => {
+    if (done) return;
+    done = true;
+    if (country !== null) geoCache.set(ip, country);
+    cb(country);
+  };
+  const greq = http.get(`http://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,countryCode`, { timeout: 3000 }, (r) => {
+    let body = '';
+    r.on('data', (d) => { body += d; if (body.length > 4096) greq.destroy(); });
+    r.on('end', () => {
+      try {
+        const j = JSON.parse(body);
+        finish(j.status === 'success' ? j.countryCode : null);
+      } catch { finish(null); }
+    });
+  });
+  greq.on('error', () => finish(null));
+  greq.on('timeout', () => { greq.destroy(); finish(null); });
+}
+
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -43,6 +69,16 @@ const server = http.createServer((req, res) => {
     const scores = sortScores(loadScores()).slice(0, 50);
     res.writeHead(200, { 'Content-Type': 'application/json' });
     return res.end(JSON.stringify(scores));
+  }
+
+  if (url.pathname === '/api/geo' && req.method === 'GET') {
+    const fwd = req.headers['x-forwarded-for'];
+    const ip = fwd ? String(fwd).split(',')[0].trim() : (req.socket.remoteAddress || '');
+    getCountry(ip, (country) => {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ country }));
+    });
+    return;
   }
 
   if (url.pathname === '/api/scores' && req.method === 'POST') {
