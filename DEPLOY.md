@@ -1,44 +1,32 @@
 # Publicar o Inventor Memory na Railway
 
-O jogo é um servidor Node persistente que grava o ranking em arquivo, então precisa de um
-host que rode processos de longa duração (Railway, Render, Fly). **Não roda em Vercel** sem
-adaptar o ranking (serverless não tem disco permanente). A Railway roda o projeto sem nenhuma
-alteração de código.
+Toda a infraestrutura está declarada em código no [`.railway/railway.ts`](.railway/railway.ts):
+serviço Node a partir do repo GitHub + **volume persistente montado em `/data`** (o ranking
+nunca zera em redeploy) + variável `DATA_DIR=/data`. Nada é configurado no painel.
 
-O login é feito por você (OAuth no navegador). O repo já está pronto: `railway.json` define o
-start, o `PORT` é lido de variável de ambiente e o ranking vai pra um volume persistente.
+O jogo **não roda em Vercel** sem adaptar o ranking (serverless não tem disco permanente).
 
-## Opção A — Pelo site (mais simples, sem instalar nada)
-
-1. Entra em https://railway.app e faz login com o GitHub.
-2. **New Project → Deploy from GitHub repo → `inventormiguel/inventor-memory-game`**.
-3. A Railway detecta o Node sozinho e roda `npm start`. Aguarda o primeiro deploy.
-4. **Settings → Networking → Generate Domain**: gera a URL pública (tipo
-   `inventor-memory-game-production.up.railway.app`).
-5. **Ranking persistente** (recomendado): em **Variables**, adiciona `DATA_DIR=/data`.
-   Depois **Settings → Volumes → New Volume**, mount path `/data`. Assim o ranking sobrevive
-   a cada redeploy. (Sem isso o jogo funciona igual, só zera o ranking a cada deploy.)
-
-## Opção B — Pela CLI
+## Deploy (uma vez)
 
 ```bash
 npm i -g @railway/cli
-railway login          # abre o navegador (uma vez só)
+railway login                # única etapa manual: OAuth no navegador
 cd ~/Documents/inventor-memory-game
-railway init           # cria o projeto
-railway up             # sobe o código
-railway domain         # gera a URL pública
-railway variables set DATA_DIR=/data   # opcional: ranking persistente (+ criar volume em /data no painel)
+railway config plan          # mostra o que vai ser criado (projeto, serviço, volume)
+railway config apply         # cria tudo a partir do .railway/railway.ts
+railway domain               # gera a URL pública
 ```
 
-## Deploy automático
+## Atualizações
 
-Depois de conectado ao repo, **todo `git push` na branch `main` dispara um novo deploy** —
-como a gente já commita cada alteração, o jogo atualiza sozinho.
+O serviço fica conectado ao repo GitHub: **todo `git push` na branch `main` dispara um novo
+deploy automático**. Mudanças de infra (volume, variáveis) são versionadas no
+`.railway/railway.ts` e aplicadas com `railway config apply`.
 
 ## Variáveis de ambiente
 
-| Variável   | O que faz                                        | Padrão            |
-|------------|--------------------------------------------------|-------------------|
-| `PORT`     | Porta do servidor (a Railway define sozinha)     | `8490`            |
-| `DATA_DIR` | Pasta onde o ranking (`scores.json`) é gravado   | `./data` no repo  |
+| Variável                     | O que faz                                      | Padrão           |
+|------------------------------|------------------------------------------------|------------------|
+| `PORT`                       | Porta do servidor (a Railway define sozinha)   | `8490`           |
+| `DATA_DIR`                   | Pasta onde o ranking (`scores.json`) é gravado | `./data` no repo |
+| `RAILWAY_VOLUME_MOUNT_PATH`  | Fallback automático quando há volume anexado   | —                |
