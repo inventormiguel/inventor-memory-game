@@ -4,171 +4,283 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inventor Memory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
+  /* ═══════════════════════════════════════════════
+     INVENTOR MEMORY — identidade inventormiguel.com
+     ═══════════════════════════════════════════════ */
+  :root{
+    --bg:#050508;
+    --bg2:#0b0b14;
+    --ink:#f2f0ea;
+    --ink-dim:#8a8896;
+    --acid:#c8ff3e;
+    --violet:#7b5cff;
+    --cyan:#41e6d2;
+    --mag:#ff4ecd;
+    --line:rgba(242,240,234,.12);
+    --font-display:"Archivo Black","Arial Black",system-ui,sans-serif;
+    --font-body:"Space Grotesk","Helvetica Neue",Arial,sans-serif;
+    --font-mono:"Space Mono","Courier New",monospace;
+  }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  ::selection{background:var(--acid);color:#000}
 
   body {
     min-height: 100vh;
-    background: linear-gradient(160deg, #b512b8 0%, #8a15ad 45%, #6d10a0 100%);
-    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-    color: #fff;
+    background: radial-gradient(ellipse at 50% -20%, var(--bg2) 0%, var(--bg) 60%);
+    font-family: var(--font-body);
+    color: var(--ink);
     display: flex;
     flex-direction: column;
     align-items: center;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
   }
 
-  .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 640px; padding: 24px 16px; }
+  /* grain do site */
+  .grain{
+    position:fixed;inset:-50%;z-index:200;pointer-events:none;opacity:.07;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    animation:grain 8s steps(10) infinite;
+  }
+  @keyframes grain{
+    0%,100%{transform:translate(0,0)}10%{transform:translate(-5%,-8%)}
+    30%{transform:translate(3%,-12%)}50%{transform:translate(9%,4%)}
+    70%{transform:translate(-7%,6%)}90%{transform:translate(4%,8%)}
+  }
+
+  .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 640px; padding: 24px 16px 48px; }
   .screen.active { display: flex; }
 
   /* ---------- HOME ---------- */
-  h1.logo {
-    font-size: clamp(2.2rem, 7vw, 3.4rem);
-    font-weight: 900;
-    letter-spacing: -1px;
-    margin-top: 28px;
-    text-shadow: 0 0 30px rgba(255, 255, 255, .35);
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: .35em;
+    text-transform: uppercase;
+    color: var(--acid);
+    margin-top: 40px;
   }
-  h1.logo span { color: #ffd93d; }
-  .tagline { opacity: .85; margin-top: 6px; font-size: 1.05rem; text-align: center; }
+  h1.logo {
+    font-family: var(--font-display);
+    font-size: clamp(2.4rem, 8vw, 4rem);
+    line-height: 1.05;
+    text-transform: uppercase;
+    margin-top: 10px;
+    text-align: center;
+  }
+  h1.logo span {
+    background: linear-gradient(90deg, var(--violet), var(--cyan), var(--acid));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .tagline {
+    color: var(--ink-dim);
+    margin-top: 14px;
+    font-size: 1rem;
+    text-align: center;
+    max-width: 40ch;
+  }
 
   .btn {
-    background: #fff;
-    color: #8a15ad;
+    background: var(--acid);
+    color: #000;
     border: none;
-    border-radius: 16px;
-    font-size: 1.25rem;
-    font-weight: 800;
-    padding: 16px 48px;
-    margin-top: 28px;
+    border-radius: 0;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    padding: 18px 44px;
+    margin-top: 32px;
     cursor: pointer;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, .25);
     transition: transform .15s, box-shadow .15s;
   }
-  .btn:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 10px 30px rgba(0, 0, 0, .3); }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 0 34px rgba(200, 255, 62, .35); }
   .btn:active { transform: scale(.97); }
-  .btn.secondary { background: rgba(255, 255, 255, .14); color: #fff; }
+  .btn.secondary { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  .btn.secondary:hover { border-color: var(--acid); color: var(--acid); box-shadow: none; }
+  .btn:disabled { opacity: .5; cursor: default; }
 
   /* ---------- RANKING ---------- */
   .ranking-box {
     width: 100%;
     max-width: 420px;
-    background: rgba(255, 255, 255, .1);
-    border: 1px solid rgba(255, 255, 255, .18);
-    border-radius: 20px;
-    padding: 18px 20px;
-    margin-top: 32px;
-    backdrop-filter: blur(6px);
+    border: 1px solid var(--line);
+    background: rgba(11, 11, 20, .6);
+    padding: 20px 22px;
+    margin-top: 40px;
   }
-  .ranking-box h2 { font-size: 1.1rem; text-align: center; margin-bottom: 12px; letter-spacing: .5px; }
+  .ranking-box h2 {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--ink-dim);
+    margin-bottom: 14px;
+  }
   .ranking-list { list-style: none; }
   .ranking-list li {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 7px 10px;
-    border-radius: 10px;
-    font-size: 1rem;
+    gap: 12px;
+    padding: 8px 10px;
+    font-size: .95rem;
+    border-bottom: 1px solid var(--line);
   }
-  .ranking-list li:nth-child(odd) { background: rgba(255, 255, 255, .06); }
-  .ranking-list li.me { background: #ffd93d; color: #6d10a0; font-weight: 800; }
-  .ranking-list .pos { width: 34px; font-weight: 700; }
+  .ranking-list li:last-child { border-bottom: none; }
+  .ranking-list li.me { background: var(--acid); color: #000; font-weight: 600; }
+  .ranking-list .pos { width: 38px; font-family: var(--font-mono); font-size: .85rem; color: var(--ink-dim); }
+  .ranking-list li.me .pos { color: #000; }
+  .ranking-list li:nth-child(1) .pos, .ranking-list li:nth-child(2) .pos, .ranking-list li:nth-child(3) .pos { color: var(--acid); }
+  .ranking-list li.me:nth-child(-n+3) .pos { color: #000; }
   .ranking-list .nome { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ranking-list .pts { font-weight: 700; }
-  .ranking-empty { text-align: center; opacity: .7; padding: 10px 0; }
+  .ranking-list .pts { font-family: var(--font-mono); font-size: .85rem; }
+  .ranking-empty { text-align: center; color: var(--ink-dim); padding: 10px 0; font-size: .95rem; }
 
   /* ---------- HUD ---------- */
-  .hud { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 8px; }
-  .hearts {
-    background: rgba(255, 255, 255, .12);
-    border-radius: 14px;
-    padding: 8px 18px;
-    font-size: 1.4rem;
-    letter-spacing: 6px;
-  }
-  .hearts .lost { opacity: .22; filter: grayscale(1); }
+  .hud { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 16px; }
+  .hud-row { display: flex; gap: 10px; align-items: stretch; }
   .pill {
-    background: rgba(255, 255, 255, .12);
-    border-radius: 12px;
-    padding: 6px 16px;
-    font-size: 1.05rem;
-    font-weight: 700;
+    border: 1px solid var(--line);
+    background: rgba(11, 11, 20, .6);
+    padding: 8px 16px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: .12em;
     display: flex;
     align-items: center;
     gap: 8px;
   }
-  .pill.warn { color: #ffd93d; animation: pulse .5s infinite alternate; }
-  @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.08); } }
-  .fase-label { font-size: .95rem; opacity: .85; font-weight: 700; letter-spacing: 1px; }
+  .pill b { color: var(--acid); }
+  .pill.warn { border-color: var(--mag); color: var(--mag); animation: pulse .5s infinite alternate; }
+  .pill.warn b { color: var(--mag); }
+  @keyframes pulse { from { opacity: 1; } to { opacity: .55; } }
+  .hearts { letter-spacing: 4px; font-size: 1.05rem; }
+  .hearts .lost { opacity: .18; filter: grayscale(1); }
 
-  /* ---------- GRID ---------- */
-  .grid-wrap { display: flex; justify-content: center; align-items: center; min-height: 380px; margin-top: 18px; width: 100%; }
-  .grid { display: grid; gap: 10px; }
+  /* ---------- GRID (fixo 5x5) ---------- */
+  .grid-wrap { display: flex; justify-content: center; align-items: center; margin-top: 26px; width: 100%; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(5, var(--cell));
+    grid-template-rows: repeat(5, var(--cell));
+    gap: 10px;
+    --cell: clamp(44px, calc((100vw - 76px) / 5), 84px);
+  }
   .cell {
-    width: var(--cell, 84px);
-    height: var(--cell, 84px);
-    border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, .25);
-    background: rgba(255, 255, 255, .05);
+    width: var(--cell);
+    height: var(--cell);
+    border: 1px solid var(--line);
+    background: rgba(242, 240, 234, .03);
     cursor: pointer;
-    transition: background .15s, box-shadow .15s, transform .1s;
+    transition: background .15s, box-shadow .15s, border-color .15s;
   }
-  .cell:hover { background: rgba(255, 255, 255, .12); }
-  .cell.lit, .cell.correct {
-    background: #dcb6e6;
-    box-shadow: 0 0 22px rgba(255, 255, 255, .55);
+  .cell:hover { background: rgba(242, 240, 234, .08); }
+  .cell.lit {
+    background: var(--ink);
     border-color: transparent;
+    box-shadow: 0 0 22px rgba(242, 240, 234, .45);
   }
-  .cell.correct { background: #ffd93d; box-shadow: 0 0 22px rgba(255, 217, 61, .8); }
-  .cell.wrong { background: #ff4d5e !important; box-shadow: 0 0 22px rgba(255, 77, 94, .8); animation: shake .3s; }
-  .cell.win { background: #4dff88; box-shadow: 0 0 26px rgba(77, 255, 136, .9); }
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-6px); }
-    75% { transform: translateX(6px); }
+  .cell.sel {
+    background: var(--acid);
+    border-color: transparent;
+    box-shadow: 0 0 18px rgba(200, 255, 62, .5);
+  }
+  .cell.win {
+    background: var(--acid);
+    border-color: transparent;
+    box-shadow: 0 0 26px rgba(200, 255, 62, .85);
+    animation: winpulse .5s ease-in-out 2;
+  }
+  @keyframes winpulse { 50% { transform: scale(.92); } }
+  .cell.missed {
+    background: transparent;
+    border-color: var(--violet);
+    box-shadow: 0 0 18px rgba(123, 92, 255, .6), inset 0 0 12px rgba(123, 92, 255, .35);
+  }
+  .cell.errado {
+    background: var(--mag);
+    border-color: transparent;
+    box-shadow: 0 0 18px rgba(255, 78, 205, .6);
   }
   .grid.no-click .cell { pointer-events: none; }
 
-  .status { margin-top: 20px; font-size: 1.15rem; min-height: 1.6em; text-align: center; font-weight: 600; }
+  .status {
+    margin-top: 24px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: .1em;
+    min-height: 1.8em;
+    text-align: center;
+    color: var(--ink-dim);
+  }
+  .status.ok { color: var(--acid); }
+  .status.bad { color: var(--mag); }
 
   /* ---------- GAME OVER ---------- */
   .gameover-card {
-    background: rgba(255, 255, 255, .1);
-    border: 1px solid rgba(255, 255, 255, .18);
-    border-radius: 24px;
-    padding: 32px 28px;
-    margin-top: 40px;
+    border: 1px solid var(--line);
+    background: rgba(11, 11, 20, .6);
+    padding: 36px 30px;
+    margin-top: 36px;
     text-align: center;
     width: 100%;
     max-width: 420px;
-    backdrop-filter: blur(6px);
   }
-  .gameover-card h2 { font-size: 2rem; margin-bottom: 6px; }
-  .gameover-card .fase-final { font-size: 1.2rem; margin-bottom: 20px; }
-  .gameover-card .fase-final b { color: #ffd93d; font-size: 1.6rem; }
+  .gameover-card .fase-final {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 8px;
+  }
+  .gameover-card .fase-num {
+    font-family: var(--font-display);
+    font-size: 4.5rem;
+    line-height: 1;
+    background: linear-gradient(90deg, var(--violet), var(--cyan), var(--acid));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 24px;
+  }
   .gameover-card input {
     width: 100%;
-    padding: 14px 16px;
-    border-radius: 12px;
-    border: none;
-    font-size: 1.1rem;
+    padding: 15px 16px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    font-family: var(--font-mono);
+    font-size: 1rem;
     text-align: center;
-    font-weight: 700;
-    color: #6d10a0;
+    color: var(--ink);
     outline: none;
   }
-  .gameover-card .btn { width: 100%; margin-top: 14px; padding: 14px; }
+  .gameover-card input:focus { border-color: var(--acid); }
+  .gameover-card input::placeholder { color: var(--ink-dim); }
+  .gameover-card .btn { width: 100%; margin-top: 14px; padding: 15px; }
 </style>
 </head>
 <body>
+<div class="grain"></div>
 
 <!-- HOME -->
 <div class="screen active" id="screen-home">
-  <h1 class="logo">🧠 Inventor <span>Memory</span></h1>
-  <p class="tagline">Memorize o padrão, repita e vá o mais longe que conseguir!</p>
+  <p class="eyebrow">// jogo de memória</p>
+  <h1 class="logo">Inventor <span>Memory</span></h1>
+  <p class="tagline">Memorize o padrão, repita e vá o mais longe que conseguir.</p>
   <button class="btn" id="btn-play">▶ Jogar</button>
   <div class="ranking-box">
-    <h2>🏆 Ranking dos Inventores</h2>
+    <h2>Ranking dos inventores</h2>
     <ol class="ranking-list" id="ranking-home"></ol>
   </div>
 </div>
@@ -176,41 +288,45 @@
 <!-- JOGO -->
 <div class="screen" id="screen-game">
   <div class="hud">
-    <div class="hearts" id="hearts"></div>
-    <div style="display:flex; gap:12px; align-items:center;">
-      <span class="fase-label" id="fase-label">FASE 1</span>
-      <span class="pill" id="timer-pill">🕐 <span id="timer">15</span>s</span>
+    <div class="pill hearts" id="hearts"></div>
+    <div class="hud-row">
+      <span class="pill">FASE <b id="fase-label">1</b></span>
+      <span class="pill" id="timer-pill">⏱ <b id="timer">15</b>s</span>
+      <span class="pill">✔ <b id="marcados">0/3</b></span>
     </div>
   </div>
   <div class="grid-wrap"><div class="grid no-click" id="grid"></div></div>
-  <div class="status" id="status">👀 Observe o padrão...</div>
+  <div class="status" id="status">observe o padrão...</div>
 </div>
 
 <!-- GAME OVER -->
 <div class="screen" id="screen-gameover">
-  <h1 class="logo">💜 Fim de <span>jogo!</span></h1>
+  <p class="eyebrow">// fim de jogo</p>
+  <h1 class="logo">Game <span>Over</span></h1>
   <div class="gameover-card">
-    <h2 id="go-emoji">🏁</h2>
-    <p class="fase-final">Você chegou na fase <b id="go-fase">1</b></p>
+    <p class="fase-final">Você chegou na fase</p>
+    <div class="fase-num" id="go-fase">1</div>
     <div id="go-form">
-      <input type="text" id="go-nome" maxlength="20" placeholder="Seu nominho aqui..." autocomplete="off">
-      <button class="btn" id="btn-salvar">💾 Entrar pro ranking</button>
+      <input type="text" id="go-nome" maxlength="20" placeholder="seu nominho aqui..." autocomplete="off">
+      <button class="btn" id="btn-salvar">Entrar pro ranking</button>
     </div>
     <div id="go-saved" style="display:none;">
       <div class="ranking-box" style="margin-top:0;">
-        <h2 id="go-rank-titulo">🏆 Ranking</h2>
+        <h2 id="go-rank-titulo">Ranking</h2>
         <ol class="ranking-list" id="ranking-go"></ol>
       </div>
     </div>
-    <button class="btn secondary" id="btn-restart">🔄 Jogar de novo</button>
+    <button class="btn secondary" id="btn-restart">Jogar de novo</button>
   </div>
 </div>
 
 <script>
 (() => {
   const TEMPO_RODADA = 15;          // segundos pra repetir o padrão
-  const PAUSA_VITORIA = 2000;       // 2s entre fases, como pedido
+  const PAUSA_VITORIA = 2000;       // 2s entre fases
   const VIDAS_INICIAIS = 3;
+  const GRADE = 5;                  // grid FIXO 5x5, nunca muda
+  const PADRAO_MAX = 12;            // teto de quadrados no padrão
 
   const $ = (id) => document.getElementById(id);
   const screens = { home: $('screen-home'), game: $('screen-game'), gameover: $('screen-gameover') };
@@ -219,8 +335,8 @@
     fase: 1,
     vidas: VIDAS_INICIAIS,
     padrao: new Set(),
-    acertos: new Set(),
-    jogando: false,      // true = aceitando cliques
+    marcados: new Set(),   // seleção atual do jogador (pode marcar/desmarcar)
+    jogando: false,
     timerInterval: null,
     tempoRestante: TEMPO_RODADA,
   };
@@ -240,7 +356,8 @@
       o.start(); o.stop(audioCtx.currentTime + dur);
     } catch {}
   }
-  const somAcerto = () => beep(660, .1);
+  const somMarca = () => beep(660, .08);
+  const somDesmarca = () => beep(440, .08);
   const somVitoria = () => { beep(523, .12); setTimeout(() => beep(659, .12), 120); setTimeout(() => beep(784, .2), 240); };
   const somErro = () => beep(140, .3, 'sawtooth', .12);
 
@@ -251,25 +368,21 @@
   }
 
   // ---------- dificuldade ----------
-  // fase 1 começa com 3 quadrados; +1 por fase. A grade cresce junto.
-  function tamanhoPadrao(fase) { return fase + 2; }
-  function tamanhoGrade(padrao) {
-    if (padrao <= 4) return 3;
-    if (padrao <= 6) return 4;
-    if (padrao <= 9) return 5;
-    if (padrao <= 13) return 6;
-    return 7;
+  // fase 1 = 3 quadrados; +1 por fase até o teto. Depois do teto,
+  // o padrão fica visível cada vez menos tempo.
+  function tamanhoPadrao(fase) { return Math.min(fase + 2, PADRAO_MAX); }
+  function tempoExibicao(fase) {
+    const qtd = tamanhoPadrao(fase);
+    const base = 1200 + qtd * 220;
+    const fasesAlemDoTeto = Math.max(0, fase - (PADRAO_MAX - 2));
+    return Math.max(700, base - fasesAlemDoTeto * 250);
   }
 
   // ---------- grid ----------
-  function montarGrade(n) {
+  function montarGrade() {
     const grid = $('grid');
     grid.innerHTML = '';
-    grid.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
-    const vw = window.innerWidth || document.documentElement.clientWidth || 640;
-    const cell = Math.max(34, Math.min(84, Math.floor((Math.min(vw, 640) - 60 - (n - 1) * 10) / n)));
-    grid.style.setProperty('--cell', cell + 'px');
-    for (let i = 0; i < n * n; i++) {
+    for (let i = 0; i < GRADE * GRADE; i++) {
       const c = document.createElement('div');
       c.className = 'cell';
       c.dataset.i = i;
@@ -278,8 +391,8 @@
     }
   }
 
-  function sortearPadrao(totalCelulas, qtd) {
-    const idx = [...Array(totalCelulas).keys()];
+  function sortearPadrao(qtd) {
+    const idx = [...Array(GRADE * GRADE).keys()];
     for (let i = idx.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [idx[i], idx[j]] = [idx[j], idx[i]];
@@ -287,35 +400,43 @@
     return new Set(idx.slice(0, qtd));
   }
 
+  function setStatus(msg, tone) {
+    const el = $('status');
+    el.textContent = msg;
+    el.className = 'status' + (tone ? ' ' + tone : '');
+  }
+
+  function atualizarContador() {
+    $('marcados').textContent = `${state.marcados.size}/${state.padrao.size}`;
+  }
+
   // ---------- rodada ----------
   function iniciarFase() {
     const qtd = tamanhoPadrao(state.fase);
-    const n = tamanhoGrade(qtd);
-    montarGrade(n);
-    state.padrao = sortearPadrao(n * n, qtd);
-    state.acertos = new Set();
+    montarGrade();
+    state.padrao = sortearPadrao(qtd);
+    state.marcados = new Set();
     state.jogando = false;
     state.tempoRestante = TEMPO_RODADA;
 
-    $('fase-label').textContent = 'FASE ' + state.fase;
+    $('fase-label').textContent = state.fase;
     $('timer').textContent = TEMPO_RODADA;
     $('timer-pill').classList.remove('warn');
-    $('status').textContent = '👀 Observe o padrão...';
+    setStatus('observe o padrão...');
+    atualizarContador();
     $('grid').classList.add('no-click');
 
-    // mostra o padrão
     const cells = $('grid').children;
     state.padrao.forEach((i) => cells[i].classList.add('lit'));
-    const tempoExibicao = 1200 + qtd * 220; // padrões maiores ficam visíveis por mais tempo
 
     setTimeout(() => {
       if (!screens.game.classList.contains('active')) return;
       state.padrao.forEach((i) => cells[i] && cells[i].classList.remove('lit'));
       state.jogando = true;
       $('grid').classList.remove('no-click');
-      $('status').textContent = '🎯 Repita o padrão!';
+      setStatus('repita o padrão — toque pra marcar, toque de novo pra desmarcar');
       iniciarTimer();
-    }, tempoExibicao);
+    }, tempoExibicao(state.fase));
   }
 
   function iniciarTimer() {
@@ -327,23 +448,28 @@
       if (state.tempoRestante <= 0) {
         clearInterval(state.timerInterval);
         state.jogando = false;
-        perderVida('⏰ Acabou o tempo!');
+        perderVida();
       }
     }, 1000);
   }
 
+  // marca/desmarca livre: só o estouro do tempo tira vida
   function clicou(i, cellEl) {
-    if (!state.jogando || state.acertos.has(i)) return;
-    if (state.padrao.has(i)) {
-      state.acertos.add(i);
-      cellEl.classList.add('correct');
-      somAcerto();
-      if (state.acertos.size === state.padrao.size) venceuFase();
+    if (!state.jogando) return;
+    if (state.marcados.has(i)) {
+      state.marcados.delete(i);
+      cellEl.classList.remove('sel');
+      somDesmarca();
     } else {
-      cellEl.classList.add('wrong');
-      state.jogando = false;
-      clearInterval(state.timerInterval);
-      perderVida('❌ Errou o quadrado!');
+      state.marcados.add(i);
+      cellEl.classList.add('sel');
+      somMarca();
+    }
+    atualizarContador();
+    // completou certinho? fecha a fase na hora
+    if (state.marcados.size === state.padrao.size &&
+        [...state.marcados].every((m) => state.padrao.has(m))) {
+      venceuFase();
     }
   }
 
@@ -351,9 +477,9 @@
     state.jogando = false;
     clearInterval(state.timerInterval);
     somVitoria();
-    $('status').textContent = '✅ Mandou bem! Próxima fase...';
+    setStatus('mandou bem! próxima fase...', 'ok');
     const cells = $('grid').children;
-    state.padrao.forEach((i) => cells[i].classList.add('win'));
+    state.padrao.forEach((i) => { cells[i].classList.remove('sel'); cells[i].classList.add('win'); });
     $('grid').classList.add('no-click');
     setTimeout(() => {
       state.fase++;
@@ -361,21 +487,27 @@
     }, PAUSA_VITORIA);
   }
 
-  function perderVida(msg) {
+  function perderVida() {
     somErro();
     state.vidas--;
     desenharVidas();
     $('grid').classList.add('no-click');
-    // revela o padrão que era pra acertar
+    // mostra o que era: acertos em verde, faltantes em violeta, marcados errados em magenta
     const cells = $('grid').children;
-    state.padrao.forEach((i) => { if (!state.acertos.has(i)) cells[i].classList.add('lit'); });
+    state.padrao.forEach((i) => {
+      cells[i].classList.remove('sel');
+      cells[i].classList.add(state.marcados.has(i) ? 'win' : 'missed');
+    });
+    state.marcados.forEach((i) => {
+      if (!state.padrao.has(i)) { cells[i].classList.remove('sel'); cells[i].classList.add('errado'); }
+    });
 
     if (state.vidas <= 0) {
-      $('status').textContent = msg + ' 💔';
-      setTimeout(fimDeJogo, 1400);
+      setStatus('acabou o tempo — fim de jogo', 'bad');
+      setTimeout(fimDeJogo, 1600);
     } else {
-      $('status').textContent = msg + ` Você tem ${state.vidas} vidinha${state.vidas > 1 ? 's' : ''}. Tenta de novo!`;
-      setTimeout(iniciarFase, 1800);
+      setStatus(`acabou o tempo! ${state.vidas} vidinha${state.vidas > 1 ? 's' : ''} — o padrão era esse. tenta de novo!`, 'bad');
+      setTimeout(iniciarFase, 2400);
     }
   }
 
@@ -387,9 +519,7 @@
 
   // ---------- game over / ranking ----------
   function fimDeJogo() {
-    const faseAlcancada = Math.max(1, state.fase);
-    $('go-fase').textContent = faseAlcancada;
-    $('go-emoji').textContent = faseAlcancada >= 8 ? '🤯' : faseAlcancada >= 5 ? '🔥' : '🏁';
+    $('go-fase').textContent = Math.max(1, state.fase);
     $('go-form').style.display = 'block';
     $('go-saved').style.display = 'none';
     $('go-nome').value = localStorage.getItem('inventor-memory-nome') || '';
@@ -399,13 +529,12 @@
 
   function renderRanking(listEl, scores, destaque = -1) {
     if (!scores.length) {
-      listEl.innerHTML = '<div class="ranking-empty">Ninguém jogou ainda... seja o primeiro! 😎</div>';
+      listEl.innerHTML = '<div class="ranking-empty">ninguém jogou ainda... seja o primeiro 😎</div>';
       return;
     }
-    const medalhas = ['🥇', '🥈', '🥉'];
     listEl.innerHTML = scores.slice(0, 10).map((s, i) =>
       `<li class="${i === destaque ? 'me' : ''}">
-        <span class="pos">${medalhas[i] || (i + 1) + 'º'}</span>
+        <span class="pos">${String(i + 1).padStart(2, '0')}</span>
         <span class="nome">${escapeHtml(s.name)}</span>
         <span class="pts">fase ${s.level}</span>
       </li>`
@@ -422,13 +551,13 @@
       const scores = await r.json();
       renderRanking($('ranking-home'), scores);
     } catch {
-      $('ranking-home').innerHTML = '<div class="ranking-empty">Não deu pra carregar o ranking 😅</div>';
+      $('ranking-home').innerHTML = '<div class="ranking-empty">não deu pra carregar o ranking 😅</div>';
     }
   }
 
   async function salvarScore() {
     const nome = $('go-nome').value.trim();
-    if (!nome) { $('go-nome').placeholder = 'Ei, coloca o nominho! 😄'; $('go-nome').focus(); return; }
+    if (!nome) { $('go-nome').placeholder = 'ei, coloca o nominho!'; $('go-nome').focus(); return; }
     localStorage.setItem('inventor-memory-nome', nome);
     $('btn-salvar').disabled = true;
     try {
@@ -440,11 +569,11 @@
       const data = await r.json();
       $('go-form').style.display = 'none';
       $('go-saved').style.display = 'block';
-      $('go-rank-titulo').textContent = `🏆 Você ficou em ${data.rank}º lugar!`;
+      $('go-rank-titulo').textContent = `Você ficou em ${data.rank}º lugar`;
       renderRanking($('ranking-go'), data.scores, data.rank - 1);
       carregarRanking();
     } catch {
-      $('go-rank-titulo').textContent = 'Erro ao salvar 😅';
+      $('go-rank-titulo').textContent = 'erro ao salvar 😅';
     } finally {
       $('btn-salvar').disabled = false;
     }
