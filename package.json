@@ -2,8 +2,12 @@
   "name": "inventor-memory-game",
   "version": "1.0.0",
   "description": "Jogo de memória de padrões com ranking",
-  "main": "server.js",
+  "type": "module",
+  "main": "server.cjs",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.cjs"
+  },
+  "devDependencies": {
+    "railway": "^3.5.2"
   }
 }

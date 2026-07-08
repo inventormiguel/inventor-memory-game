@@ -1,5 +1,7 @@
 # 🧠 Inventor Memory
 
+**Jogar agora:** https://inventor-memory-game-production.up.railway.app
+
 Jogo de memória de padrões: os quadrados acendem, somem, e você tem que repetir o padrão clicando. A cada fase o padrão cresce e a grade aumenta junto (3x3 até 7x7).
 
 ## Regras
@@ -12,7 +14,7 @@ Jogo de memória de padrões: os quadrados acendem, somem, e você tem que repet
 ## Rodando
 
 ```bash
-node server.js
+npm start
 ```
 
 Abre em [http://localhost:8490](http://localhost:8490). Sem dependências — só Node.
@@ -21,7 +23,7 @@ O ranking fica em `data/scores.json` (criado automaticamente).
 
 ## Stack
 
-- `server.js` — servidor HTTP em Node puro (estáticos + API do ranking)
+- `server.cjs` — servidor HTTP em Node puro (estáticos + API do ranking)
 - `public/index.html` — o jogo inteiro num arquivo só (HTML + CSS + JS, sons via WebAudio)
 
 Feito com Claude Code 🤖

@@ -1,24 +1,18 @@
-import { defineRailway, github, project, service, volume } from "railway/iac";
+import { defineRailway, preserve, project, service, volume } from "railway/iac";
 
-// Infraestrutura declarada em código: serviço Node + volume persistente pro ranking.
-// Aplicar com: railway config plan && railway config apply
 export default defineRailway(() => {
-  const rankingData = volume("ranking-data", {
-    sizeMB: 512,
-  });
-
-  const game = service("inventor-memory", {
-    source: github("inventormiguel/inventor-memory-game", { branch: "main" }),
-    start: "npm start",
+  const inventorMemoryGameVolume = volume("inventor-memory-game-volume", { alerts: { usage: { "100": {}, "80": {}, "95": {} } }, allowOnlineResize: true, region: "sfo", sizeMB: 500 });
+  const inventorMemoryGame = service("inventor-memory-game", {
+    replicas: 1,
     volumeMounts: {
-      "/data": rankingData,
+      "/data": inventorMemoryGameVolume,
     },
     env: {
-      DATA_DIR: "/data",
+      DATA_DIR: preserve(),
     },
   });
 
   return project("inventor-memory-game", {
-    resources: [game, rankingData],
+    resources: [inventorMemoryGame, inventorMemoryGameVolume],
   });
 });
