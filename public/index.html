@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventor Memory</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(160deg, #b512b8 0%, #8a15ad 45%, #6d10a0 100%);
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 640px; padding: 24px 16px; }
+  .screen.active { display: flex; }
+
+  /* ---------- HOME ---------- */
+  h1.logo {
+    font-size: clamp(2.2rem, 7vw, 3.4rem);
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-top: 28px;
+    text-shadow: 0 0 30px rgba(255, 255, 255, .35);
+  }
+  h1.logo span { color: #ffd93d; }
+  .tagline { opacity: .85; margin-top: 6px; font-size: 1.05rem; text-align: center; }
+
+  .btn {
+    background: #fff;
+    color: #8a15ad;
+    border: none;
+    border-radius: 16px;
+    font-size: 1.25rem;
+    font-weight: 800;
+    padding: 16px 48px;
+    margin-top: 28px;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, .25);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .btn:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 10px 30px rgba(0, 0, 0, .3); }
+  .btn:active { transform: scale(.97); }
+  .btn.secondary { background: rgba(255, 255, 255, .14); color: #fff; }
+
+  /* ---------- RANKING ---------- */
+  .ranking-box {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(255, 255, 255, .1);
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 20px;
+    padding: 18px 20px;
+    margin-top: 32px;
+    backdrop-filter: blur(6px);
+  }
+  .ranking-box h2 { font-size: 1.1rem; text-align: center; margin-bottom: 12px; letter-spacing: .5px; }
+  .ranking-list { list-style: none; }
+  .ranking-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 10px;
+    font-size: 1rem;
+  }
+  .ranking-list li:nth-child(odd) { background: rgba(255, 255, 255, .06); }
+  .ranking-list li.me { background: #ffd93d; color: #6d10a0; font-weight: 800; }
+  .ranking-list .pos { width: 34px; font-weight: 700; }
+  .ranking-list .nome { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ranking-list .pts { font-weight: 700; }
+  .ranking-empty { text-align: center; opacity: .7; padding: 10px 0; }
+
+  /* ---------- HUD ---------- */
+  .hud { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 8px; }
+  .hearts {
+    background: rgba(255, 255, 255, .12);
+    border-radius: 14px;
+    padding: 8px 18px;
+    font-size: 1.4rem;
+    letter-spacing: 6px;
+  }
+  .hearts .lost { opacity: .22; filter: grayscale(1); }
+  .pill {
+    background: rgba(255, 255, 255, .12);
+    border-radius: 12px;
+    padding: 6px 16px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pill.warn { color: #ffd93d; animation: pulse .5s infinite alternate; }
+  @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.08); } }
+  .fase-label { font-size: .95rem; opacity: .85; font-weight: 700; letter-spacing: 1px; }
+
+  /* ---------- GRID ---------- */
+  .grid-wrap { display: flex; justify-content: center; align-items: center; min-height: 380px; margin-top: 18px; width: 100%; }
+  .grid { display: grid; gap: 10px; }
+  .cell {
+    width: var(--cell, 84px);
+    height: var(--cell, 84px);
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, .25);
+    background: rgba(255, 255, 255, .05);
+    cursor: pointer;
+    transition: background .15s, box-shadow .15s, transform .1s;
+  }
+  .cell:hover { background: rgba(255, 255, 255, .12); }
+  .cell.lit, .cell.correct {
+    background: #dcb6e6;
+    box-shadow: 0 0 22px rgba(255, 255, 255, .55);
+    border-color: transparent;
+  }
+  .cell.correct { background: #ffd93d; box-shadow: 0 0 22px rgba(255, 217, 61, .8); }
+  .cell.wrong { background: #ff4d5e !important; box-shadow: 0 0 22px rgba(255, 77, 94, .8); animation: shake .3s; }
+  .cell.win { background: #4dff88; box-shadow: 0 0 26px rgba(77, 255, 136, .9); }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+  .grid.no-click .cell { pointer-events: none; }
+
+  .status { margin-top: 20px; font-size: 1.15rem; min-height: 1.6em; text-align: center; font-weight: 600; }
+
+  /* ---------- GAME OVER ---------- */
+  .gameover-card {
+    background: rgba(255, 255, 255, .1);
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 24px;
+    padding: 32px 28px;
+    margin-top: 40px;
+    text-align: center;
+    width: 100%;
+    max-width: 420px;
+    backdrop-filter: blur(6px);
+  }
+  .gameover-card h2 { font-size: 2rem; margin-bottom: 6px; }
+  .gameover-card .fase-final { font-size: 1.2rem; margin-bottom: 20px; }
+  .gameover-card .fase-final b { color: #ffd93d; font-size: 1.6rem; }
+  .gameover-card input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: none;
+    font-size: 1.1rem;
+    text-align: center;
+    font-weight: 700;
+    color: #6d10a0;
+    outline: none;
+  }
+  .gameover-card .btn { width: 100%; margin-top: 14px; padding: 14px; }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="screen active" id="screen-home">
+  <h1 class="logo">🧠 Inventor <span>Memory</span></h1>
+  <p class="tagline">Memorize o padrão, repita e vá o mais longe que conseguir!</p>
+  <button class="btn" id="btn-play">▶ Jogar</button>
+  <div class="ranking-box">
+    <h2>🏆 Ranking dos Inventores</h2>
+    <ol class="ranking-list" id="ranking-home"></ol>
+  </div>
+</div>
+
+<!-- JOGO -->
+<div class="screen" id="screen-game">
+  <div class="hud">
+    <div class="hearts" id="hearts"></div>
+    <div style="display:flex; gap:12px; align-items:center;">
+      <span class="fase-label" id="fase-label">FASE 1</span>
+      <span class="pill" id="timer-pill">🕐 <span id="timer">15</span>s</span>
+    </div>
+  </div>
+  <div class="grid-wrap"><div class="grid no-click" id="grid"></div></div>
+  <div class="status" id="status">👀 Observe o padrão...</div>
+</div>
+
+<!-- GAME OVER -->
+<div class="screen" id="screen-gameover">
+  <h1 class="logo">💜 Fim de <span>jogo!</span></h1>
+  <div class="gameover-card">
+    <h2 id="go-emoji">🏁</h2>
+    <p class="fase-final">Você chegou na fase <b id="go-fase">1</b></p>
+    <div id="go-form">
+      <input type="text" id="go-nome" maxlength="20" placeholder="Seu nominho aqui..." autocomplete="off">
+      <button class="btn" id="btn-salvar">💾 Entrar pro ranking</button>
+    </div>
+    <div id="go-saved" style="display:none;">
+      <div class="ranking-box" style="margin-top:0;">
+        <h2 id="go-rank-titulo">🏆 Ranking</h2>
+        <ol class="ranking-list" id="ranking-go"></ol>
+      </div>
+    </div>
+    <button class="btn secondary" id="btn-restart">🔄 Jogar de novo</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const TEMPO_RODADA = 15;          // segundos pra repetir o padrão
+  const PAUSA_VITORIA = 2000;       // 2s entre fases, como pedido
+  const VIDAS_INICIAIS = 3;
+
+  const $ = (id) => document.getElementById(id);
+  const screens = { home: $('screen-home'), game: $('screen-game'), gameover: $('screen-gameover') };
+
+  const state = {
+    fase: 1,
+    vidas: VIDAS_INICIAIS,
+    padrao: new Set(),
+    acertos: new Set(),
+    jogando: false,      // true = aceitando cliques
+    timerInterval: null,
+    tempoRestante: TEMPO_RODADA,
+  };
+  window.__state = state; // debug
+
+  // ---------- áudio ----------
+  let audioCtx = null;
+  function beep(freq, dur = .12, type = 'sine', vol = .15) {
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(vol, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + dur);
+      o.connect(g).connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + dur);
+    } catch {}
+  }
+  const somAcerto = () => beep(660, .1);
+  const somVitoria = () => { beep(523, .12); setTimeout(() => beep(659, .12), 120); setTimeout(() => beep(784, .2), 240); };
+  const somErro = () => beep(140, .3, 'sawtooth', .12);
+
+  // ---------- navegação ----------
+  function show(name) {
+    Object.values(screens).forEach((s) => s.classList.remove('active'));
+    screens[name].classList.add('active');
+  }
+
+  // ---------- dificuldade ----------
+  // fase 1 começa com 3 quadrados; +1 por fase. A grade cresce junto.
+  function tamanhoPadrao(fase) { return fase + 2; }
+  function tamanhoGrade(padrao) {
+    if (padrao <= 4) return 3;
+    if (padrao <= 6) return 4;
+    if (padrao <= 9) return 5;
+    if (padrao <= 13) return 6;
+    return 7;
+  }
+
+  // ---------- grid ----------
+  function montarGrade(n) {
+    const grid = $('grid');
+    grid.innerHTML = '';
+    grid.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+    const vw = window.innerWidth || document.documentElement.clientWidth || 640;
+    const cell = Math.max(34, Math.min(84, Math.floor((Math.min(vw, 640) - 60 - (n - 1) * 10) / n)));
+    grid.style.setProperty('--cell', cell + 'px');
+    for (let i = 0; i < n * n; i++) {
+      const c = document.createElement('div');
+      c.className = 'cell';
+      c.dataset.i = i;
+      c.addEventListener('click', () => clicou(i, c));
+      grid.appendChild(c);
+    }
+  }
+
+  function sortearPadrao(totalCelulas, qtd) {
+    const idx = [...Array(totalCelulas).keys()];
+    for (let i = idx.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [idx[i], idx[j]] = [idx[j], idx[i]];
+    }
+    return new Set(idx.slice(0, qtd));
+  }
+
+  // ---------- rodada ----------
+  function iniciarFase() {
+    const qtd = tamanhoPadrao(state.fase);
+    const n = tamanhoGrade(qtd);
+    montarGrade(n);
+    state.padrao = sortearPadrao(n * n, qtd);
+    state.acertos = new Set();
+    state.jogando = false;
+    state.tempoRestante = TEMPO_RODADA;
+
+    $('fase-label').textContent = 'FASE ' + state.fase;
+    $('timer').textContent = TEMPO_RODADA;
+    $('timer-pill').classList.remove('warn');
+    $('status').textContent = '👀 Observe o padrão...';
+    $('grid').classList.add('no-click');
+
+    // mostra o padrão
+    const cells = $('grid').children;
+    state.padrao.forEach((i) => cells[i].classList.add('lit'));
+    const tempoExibicao = 1200 + qtd * 220; // padrões maiores ficam visíveis por mais tempo
+
+    setTimeout(() => {
+      if (!screens.game.classList.contains('active')) return;
+      state.padrao.forEach((i) => cells[i] && cells[i].classList.remove('lit'));
+      state.jogando = true;
+      $('grid').classList.remove('no-click');
+      $('status').textContent = '🎯 Repita o padrão!';
+      iniciarTimer();
+    }, tempoExibicao);
+  }
+
+  function iniciarTimer() {
+    clearInterval(state.timerInterval);
+    state.timerInterval = setInterval(() => {
+      state.tempoRestante--;
+      $('timer').textContent = state.tempoRestante;
+      if (state.tempoRestante <= 5) $('timer-pill').classList.add('warn');
+      if (state.tempoRestante <= 0) {
+        clearInterval(state.timerInterval);
+        state.jogando = false;
+        perderVida('⏰ Acabou o tempo!');
+      }
+    }, 1000);
+  }
+
+  function clicou(i, cellEl) {
+    if (!state.jogando || state.acertos.has(i)) return;
+    if (state.padrao.has(i)) {
+      state.acertos.add(i);
+      cellEl.classList.add('correct');
+      somAcerto();
+      if (state.acertos.size === state.padrao.size) venceuFase();
+    } else {
+      cellEl.classList.add('wrong');
+      state.jogando = false;
+      clearInterval(state.timerInterval);
+      perderVida('❌ Errou o quadrado!');
+    }
+  }
+
+  function venceuFase() {
+    state.jogando = false;
+    clearInterval(state.timerInterval);
+    somVitoria();
+    $('status').textContent = '✅ Mandou bem! Próxima fase...';
+    const cells = $('grid').children;
+    state.padrao.forEach((i) => cells[i].classList.add('win'));
+    $('grid').classList.add('no-click');
+    setTimeout(() => {
+      state.fase++;
+      iniciarFase();
+    }, PAUSA_VITORIA);
+  }
+
+  function perderVida(msg) {
+    somErro();
+    state.vidas--;
+    desenharVidas();
+    $('grid').classList.add('no-click');
+    // revela o padrão que era pra acertar
+    const cells = $('grid').children;
+    state.padrao.forEach((i) => { if (!state.acertos.has(i)) cells[i].classList.add('lit'); });
+
+    if (state.vidas <= 0) {
+      $('status').textContent = msg + ' 💔';
+      setTimeout(fimDeJogo, 1400);
+    } else {
+      $('status').textContent = msg + ` Você tem ${state.vidas} vidinha${state.vidas > 1 ? 's' : ''}. Tenta de novo!`;
+      setTimeout(iniciarFase, 1800);
+    }
+  }
+
+  function desenharVidas() {
+    $('hearts').innerHTML = [...Array(VIDAS_INICIAIS)]
+      .map((_, i) => `<span class="${i < state.vidas ? '' : 'lost'}">❤️</span>`)
+      .join('');
+  }
+
+  // ---------- game over / ranking ----------
+  function fimDeJogo() {
+    const faseAlcancada = Math.max(1, state.fase);
+    $('go-fase').textContent = faseAlcancada;
+    $('go-emoji').textContent = faseAlcancada >= 8 ? '🤯' : faseAlcancada >= 5 ? '🔥' : '🏁';
+    $('go-form').style.display = 'block';
+    $('go-saved').style.display = 'none';
+    $('go-nome').value = localStorage.getItem('inventor-memory-nome') || '';
+    show('gameover');
+    $('go-nome').focus();
+  }
+
+  function renderRanking(listEl, scores, destaque = -1) {
+    if (!scores.length) {
+      listEl.innerHTML = '<div class="ranking-empty">Ninguém jogou ainda... seja o primeiro! 😎</div>';
+      return;
+    }
+    const medalhas = ['🥇', '🥈', '🥉'];
+    listEl.innerHTML = scores.slice(0, 10).map((s, i) =>
+      `<li class="${i === destaque ? 'me' : ''}">
+        <span class="pos">${medalhas[i] || (i + 1) + 'º'}</span>
+        <span class="nome">${escapeHtml(s.name)}</span>
+        <span class="pts">fase ${s.level}</span>
+      </li>`
+    ).join('');
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  async function carregarRanking() {
+    try {
+      const r = await fetch('/api/scores');
+      const scores = await r.json();
+      renderRanking($('ranking-home'), scores);
+    } catch {
+      $('ranking-home').innerHTML = '<div class="ranking-empty">Não deu pra carregar o ranking 😅</div>';
+    }
+  }
+
+  async function salvarScore() {
+    const nome = $('go-nome').value.trim();
+    if (!nome) { $('go-nome').placeholder = 'Ei, coloca o nominho! 😄'; $('go-nome').focus(); return; }
+    localStorage.setItem('inventor-memory-nome', nome);
+    $('btn-salvar').disabled = true;
+    try {
+      const r = await fetch('/api/scores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: nome, level: Math.max(1, state.fase) }),
+      });
+      const data = await r.json();
+      $('go-form').style.display = 'none';
+      $('go-saved').style.display = 'block';
+      $('go-rank-titulo').textContent = `🏆 Você ficou em ${data.rank}º lugar!`;
+      renderRanking($('ranking-go'), data.scores, data.rank - 1);
+      carregarRanking();
+    } catch {
+      $('go-rank-titulo').textContent = 'Erro ao salvar 😅';
+    } finally {
+      $('btn-salvar').disabled = false;
+    }
+  }
+
+  // ---------- start ----------
+  function novoJogo() {
+    state.fase = 1;
+    state.vidas = VIDAS_INICIAIS;
+    desenharVidas();
+    show('game');
+    iniciarFase();
+  }
+
+  $('btn-play').addEventListener('click', novoJogo);
+  $('btn-restart').addEventListener('click', novoJogo);
+  $('btn-salvar').addEventListener('click', salvarScore);
+  $('go-nome').addEventListener('keydown', (e) => { if (e.key === 'Enter') salvarScore(); });
+
+  carregarRanking();
+})();
+</script>
+</body>
+</html>
